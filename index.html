@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Apiario Pro</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --primary-dark: #d35400;
+            --bg: #f9f9f9;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #e0e0e0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--primary-dark);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        .alert-box {
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        /* Estilos Guía Sanitaria */
+        .enfermedad-item {
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+        .enfermedad-item:last-child {
+            border-bottom: none;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 7px;
+            font-size: 12px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <center><h1>🐝 Sistema de Gestión Apícola</h1></center>
+    
+    <div class="card" id="permiso-notificacion-card">
+        <h3>🔔 Notificaciones del Sistema</h3>
+        <p>Para recibir alertas en tu pantalla cuando una reina necesite alimentación, activa los permisos aquí:</p>
+        <button onclick="solicitarPermisos()">Activar Notificaciones de Pantalla</button>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>📝 Registro de Inspección</h2>
+            <form id="apiario-form">
+                <label for="colmena-id">ID de la Colmena:</label>
+                <input type="text" id="colmena-id" placeholder="Ej. C-01" required>
+
+                <label for="fecha-alimentacion">Fecha de Última Alimentación:</label>
+                <input type="date" id="fecha-alimentacion" required>
+
+                <label for="estado-reina">Estado de la Reina:</label>
+                <select id="estado-reina">
+                    <option value="bueno">Fuerte / Activa</option>
+                    <option value="debil">Débil / Postura irregular</option>
+                    <option value="ausente">Ausente (Huérfana)</option>
+                </select>
+
+                <button type="button" onclick="procesarDatos()">Verificar y Guardar Estado</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>📊 Resumen y Alertas Directas</h2>
+            <div id="panel-alertas">
+                <p>Ingresa los datos de la colmena para evaluar alertas.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>💰 Balance Financiero Breve</h2>
+        <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div>
+                <label>Ingresos (Venta Miel/Derivados):</label>
+                <input type="number" id="ingresos" value="0" oninput="calcularBalance()">
+            </div>
+            <div>
+                <label>Egresos (Insumos/Alimento):</label>
+                <input type="number" id="egresos" value="0" oninput="calcularBalance()">
+            </div>
+            <div>
+                <label>Saldo Neto:</label>
+                <h3 id="saldo-total" style="margin-top: 10px; color: #2ecc71;">$0.00</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🏥 Guía Sanitaria Apícola Completa</h2>
+        <p>Principales patologías, diagnóstico básico y tratamientos recomendados:</p>
+        
+        <div class="enfermedad-item">
+            <h3>Varrosis <span class="badge">Grave</span></h3>
+            <p><strong>¿Qué es?</strong> Enfermedad causada por el ácaro externo <em>Varroa destructor</em>, que chupa la hemolinfa y tejido graso de larvas y abejas adultas, debilitándolas y transmitiendo virus.</p>
+            <p><strong>Tratamiento:</strong> Aplicación de ácidos orgánicos (ácido oxálico, ácido fórmico) o timol en dosis controladas según la temperatura ambiental. Evitar tratamientos durante la mielada.</p>
+        </div>
+
+        <div class="enfermedad-item">
+            <h3>Loque Americana <span class="badge">Crítica</span></h3>
+            <p><strong>¿Qué es?</strong> Infección bacteriana (<em>Paenibacillus larvae</em>) altamente contagiosa que ataca a las larvas jóvenes. Las larvas mueren en las celdas selladas, adquiriendo una consistencia viscosa y olor a podrido.</p>
+            <p><strong>Tratamiento:</strong> No tiene cura efectiva permitida en muchas regiones debido a las esporas resistentes. Se recomienda el aislamiento, la destrucción por fuego de los cuadros afectados y la desinfección rigurosa del material con fuego directo o sosa cáustica.</p>
+        </div>
+
+        <div class="enfermedad-item">
+            <h3>Loque Europea <span class="badge">Moderada</span></h3>
+            <p><strong>¿Qué es?</strong> Enfermedad bacteriana (<em>Melissococcus plutonius</em>) que afecta a las larvas antes de ser operculadas. Las larvas muertas toman un color amarillento y forma de "C".</p>
+            <p><strong>Tratamiento:</strong> Fortalecer las colmenas mediante alimentación estimulante (jarabe), e higienizar o cambiar a una reina con mejor comportamiento de limpieza.</p>
+        </div>
+
+        <div class="enfermedad-item">
+            <h3>Noosemiasis <span class="badge">Grave</span></h3>
+            <p><strong>¿Qué es?</strong> Enfermedad parasitaria causada por los microsporidios <em>Nosema apis</em> o <em>Nosema ceranae</em>, que ataca el aparato digestivo de las abejas adultas, provocando diarrea (manchas fecales en la piquera) y reducción drástica de su vida útil.</p>
+            <p><strong>Tratamiento:</strong> Manejo de la humedad en el apiario, cambio regular de panales viejos y suplementación con promotores de la microbiota e inmunidad apícola. Evitar la invernada con reservas de miel de mala calidad.</p>
+        </div>
+
+        <div class="enfermedad-item">
+            <h3>Aspergilosis (Cría de Yeso / Calcificada) <span class="badge">Leve</span></h3>
+            <p><strong>¿Qué es?</strong> Infección fúngica (<em>Ascosphaera apis</em>) donde las larvas mueren y se transforman en "momias" duras y blancas similares al yeso.</p>
+            <p><strong>Tratamiento:</strong> Mejorar la ventilación de la colmena para erradicar la humedad excesiva y cambiar la colmena a una zona más soleada.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Solicitar permiso de notificaciones al navegador
+    function solicitarPermisos() {
+        if (!("Notification" in window)) {
+            alert("Este navegador no soporta notificaciones de escritorio.");
+            return;
+        }
+        Notification.requestPermission().then(perm => {
+            if (perm === "granted") {
+                alert("¡Permisos concedidos! Recibirás alertas del sistema.");
+                document.getElementById('permiso-notificacion-card').style.display = 'none';
+            } else {
+                alert("Permiso denegado. No podrás recibir notificaciones en pantalla.");
+            }
+        });
+    }
+
+    // Ocultar bloque si el permiso ya fue otorgado previamente
+    if (window.Notification && Notification.permission === "granted") {
+        document.getElementById('permiso-notificacion-card').style.display = 'none';
+    }
+
+    function procesarDatos() {
+        const id = document.getElementById('colmena-id').value;
+        const fechaAlimInput = document.getElementById('fecha-alimentacion').value;
+        const estadoReina = document.getElementById('estado-reina').value;
+        const panel = document.getElementById('panel-alertas');
+
+        if (!id || !fechaAlimInput) {
+            panel.innerHTML = "<p style='color:red;'>Por favor, rellena todos los campos de inspección.</p>";
+            return;
+        }
+
+        const fechaUltimaAlim = new Date(fechaAlimInput);
+        const hoy = new Date();
+        
+        // Calcular diferencia en días
+        const diferenciaTiempo = hoy.getTime() - fechaUltimaAlim.getTime();
+        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+
+        let alertaTexto = "";
+        let claseAlerta = "";
+        let requiereAlertaNativa = false;
+
+        if (diasTranscurridos >= 15) {
+            alertaTexto = `⚠️ ¡ALERTA CRÍTICA! La colmena <strong>${id}</strong> lleva ${diasTranscurridos} días sin alimentación. Excedió el límite de 15 días.`;
+            claseAlerta = "alert-danger";
+            requiereAlertaNativa = true;
+        } else {
+            const diasRestantes = 15 - diasTranscurridos;
+            alertaTexto = `✅ Colmena <strong>${id}</strong> estable. Última alimentación hace ${diasTranscurridos} días. Próxima alimentación en ${diasRestantes} días.`;
+            claseAlerta = "alert-success";
+        }
+
+        // Si el estado de la reina es malo, añadir advertencia extra
+        if (estadoReina === "debil" || estadoReina === "ausente") {
+            alertaTexto += `<br>🚨 <strong>Atención Sanitaria:</strong> La reina se reporta como [${estadoReina.toUpperCase()}]. Revisar Guía Sanitaria abajo de inmediato.`;
+            claseAlerta = "alert-danger";
+        }
+
+        // Renderizar en la página web
+        panel.innerHTML = `<div class="alert-box ${claseAlerta}">${alertaTexto}</div>`;
+
+        // ENVIAR NOTIFICACIÓN AL SISTEMA/PANTALLA si aplica
+        if (requiereAlertaNativa && window.Notification && Notification.permission === "granted") {
+            new Notification(`🚨 Alerta de Apiario: Colmena ${id}`, {
+                body: `Leva ${diasTranscurridos} días sin alimentación. ¡Es urgente alimentar a la reina!`,
+                icon: 'https://cdn-icons-png.flaticon.com/512/2316/2316886.png' // Icono genérico de abeja
+            });
+        }
+    }
+
+    function calcularBalance() {
+        const ingresos = parseFloat(document.getElementById('ingresos').value) || 0;
+        const egresos = parseFloat(document.getElementById('egresos').value) || 0;
+        const saldo = ingresos - egresos;
+        const saldoH3 = document.getElementById('saldo-total');
+        
+        saldoH3.innerText = `$${saldo.toFixed(2)}`;
+        if (saldo >= 0) {
+            saldoH3.style.color = "#2ecc71";
+        } else {
+            saldoH3.style.color = "#e74c3c";
+        }
+    }
+</script>
+
+</body>
+</html>
